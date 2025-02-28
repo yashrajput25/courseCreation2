@@ -16,6 +16,57 @@ export default function CreateCourse() {
         return match ? match[1] : null
     }
 
+    const convertTimestampToSeconds = (timestamp) => {
+        const parts = timestamp.split(":").map(Number);
+        return parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : parts[0] * 60 + parts[1];
+    }
+
+    const extractChaptersFromDescription = (description, videoId) => {
+        const lines = description.split("\n");
+        const chapterPattern = /(\d{1,2}:\d{2}(?::\d{2})?)\s+(.*)/;
+        let chapters = [];
+        for(let i = 0; i < lines.length ;i++ ){
+            const match = lines[i].match(chapterPattern);
+            if(match){
+                let startTime = convertTimestampToSeconds(match[1]);
+                let title = match[2];
+                let endTime = i+1 < lines.length ? convertTimestampToSeconds(lines[i+1]
+                    .match(chapterPattern)?.[1]): null
+                chapters.push({
+                        title,
+                        videoUrl: `https://www.youtube.com/embed/${videoId}?start=${startTime}${endTime ? `&end=${endTime}` : ""}`,
+                        startTime,
+                        endTime
+                });    
+            }
+        }
+        return chapters;
+    };
+
+
+    const handleSubmit = async () => {
+
+        if(!courseName || chapters.length === 0){
+            alert("Error");
+            return;
+        }
+
+        try{
+            await axios.post("", {
+                name: courseName,
+                videos: chapters.map(chapter => videoUrl)
+            })
+            alert("Course created successfully!");
+            setCourseName("");
+            setVideoUrl("");
+            setChapters([]);
+
+        }catch(error){
+            console.error(error);
+            alert("Error creating course.");
+        }
+    }
+
     const fetchVideoDetails = async () => {
         const videoId = extractVideoId(videoUrl);
         if(!videoId){
@@ -49,56 +100,40 @@ export default function CreateCourse() {
 
 
     return (
-        <div className="course-container">
-            <h2 className="title">📚 Create a Course</h2>
+        <div>
+            <h2>Create a Course</h2>
 
-            <label className="label">Course Name:</label>
             <input
                 type="text"
-                className="input"
-                placeholder="Type Course Name"
+                placeholder="Course Name"
                 value={courseName}
                 onChange={(e) => setCourseName(e.target.value)}
-                disabled={playlistUrl !== ""}
             />
 
-            <label className="label">🎥 Enter a Playlist URL (Optional)</label>
+            <h3>Enter a YouTube Video URL</h3>
             <input
                 type="text"
-                className="input"
-                placeholder="Paste YouTube Playlist URL"
-                value={playlistUrl}
-                onChange={(e) => setPlayListUrl(e.target.value)}
+                placeholder="Enter Video URL"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
             />
+            <button onClick={fetchVideoDetails}>Extract Chapters</button>
 
-            <h3 className="section-title">📌 Add Individual Videos:</h3>
-            {videos.map((video, index) => (
-                <input
-                    key={index}
-                    type="text"
-                    className="input"
-                    placeholder="YouTube Video URL"
-                    value={video}
-                    onChange={(e) => handleVideoChange(index, e.target.value)}
-                    disabled={playlistUrl !== ""}
-                />
-            ))}
+            {chapters.length > 0 && (
+                <div>
+                    <h3>Extracted Chapters</h3>
+                    <ul>
+                        {chapters.map((chapter, index) => (
+                            <li key={index}>
+                                <strong>{chapter.title}</strong> -
+                                <a href={chapter.videoUrl} target="_blank" rel="noopener noreferrer"> Watch</a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
-            <div className="button-group">
-                <button 
-                    onClick={addMoreVideos} 
-                    className="button add-video"
-                    disabled={playlistUrl !== ""}
-                >
-                    ➕ Add Another Video
-                </button>
-                <button 
-                    onClick={handleSubmit} 
-                    className="button create-course"
-                >
-                    ✅ Create Course
-                </button>
-            </div>
+            <button onClick={handleSubmit}>Create Course</button>
         </div>
     );
 }
