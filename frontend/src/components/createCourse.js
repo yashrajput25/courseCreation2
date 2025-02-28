@@ -3,42 +3,50 @@ import axios from "axios";
 import "../css/CreateCourse.css"; // Import CSS file for styling
 
 export default function CreateCourse() {
+
+    const YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY";
+
     // State variables for course creation
     const [courseName, setCourseName] = useState("");
-    const [videos, setVideos] = useState([""]);
-    const [playlistUrl, setPlayListUrl] = useState("");
+    const [videoUrl, setVideoUrl] = useState("");
+    const [chapters, setChapters] = useState([]);
 
-    // Handles input change for videos
-    const handleVideoChange = (index, value) => {
-        const updatedVideos = [...videos];
-        updatedVideos[index] = value;
-        setVideos(updatedVideos);
-    };
+    const extractVideoId = (url) => {
+        const match = url.match(/(?:v=|youtu\.be\/|embed\/)([^&?/]+)/);
+        return match ? match[1] : null
+    }
 
-    // Adds a new empty input field for video URLs
-    const addMoreVideos = () => setVideos([...videos, ""]);
-
-    // Handles form submission
-    const handleSubmit = async () => {
-        if (!courseName || ((!videos || videos.length === 0) && !playlistUrl)) {
-            alert("Course name and at least one video or playlist URL is required!");
+    const fetchVideoDetails = async () => {
+        const videoId = extractVideoId(videoUrl);
+        if(!videoId){
+            alert("Invalid Youtube Url");
             return;
         }
 
-        try {
-            await axios.post("http://localhost:5001/api/courses/create", {
-                name: courseName,
-                videos: videos.filter(v => v !== ""), // Removes empty video fields
-                playlistUrl: playlistUrl || null
-            });
-            alert("Course created successfully!");
-            setCourseName("");
-            setVideos([""]);
-            setPlayListUrl("");
-        } catch (error) {
-            alert("Error creating the course.");
+        try{
+            const response = await axios.get(
+                `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=<VIDEO_ID>&key=<API_KEY>`
+            );
+            console.log(response);
+
+            const description = response.data.items[0]?.snippet?.description || "";
+
+            const extractedChapters = extractChaptersFromDescription(description, videoId);
+
+            if(extractedChapters.length === 0){
+                alert("No chpaters found in the description");
+                return;
+            }
+
+            setChapters(extractedChapters);
+            alert("Chapters extracted successfully!");
+
+        }catch(error){
+            console.error("Error fetching video details:", error);
+            alert("Failed to fetch video details. Check API key and quota.");
         }
-    };
+    }
+
 
     return (
         <div className="course-container">
