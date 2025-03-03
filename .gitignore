@@ -7,3 +7,7 @@ frontend/node_modules/.cache/.eslintcache
 frontend/node_modules/.cache/.eslintcache
 /frontend/node_modules/.cache
 /frontend/node_modules
+# Ignore Node.js dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
