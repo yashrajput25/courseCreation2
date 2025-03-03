@@ -1,155 +1,144 @@
-// import { useState, useEffect } from "react";
-// import axios from "axios";
-
-// const CourseList = () => {
-//     const [courses, setCourses] = useState([]);
-
-//     useEffect(() => {
-//         const fetchCourses = async () => {
-//             try {
-//                 const response = await axios.get("http://localhost:5001/api/courses/all");
-//                 setCourses(response.data);
-//             } catch (error) {
-//                 console.error("Error fetching courses", error);
-//             }
-//         };
-//         fetchCourses();
-//     }, []);
-
-//     return (
-//         <div>
-//             <h2>Available Courses</h2>
-//             {courses.length === 0 ? (
-//                 <p>No courses available</p>
-//             ) : (
-//                 courses.map((course) => (
-//                     <div key={course._id} style={{ border: "1px solid #ddd", padding: "10px", marginBottom: "20px" }}>
-//                         <h3>{course.name}</h3>
-
-//                         {/* Display YouTube Playlist if available */}
-//                         {course.playlistUrl ? (
-//                             <iframe
-//                                 width="560"
-//                                 height="315"
-//                                 src={`https://www.youtube.com/embed/videoseries?list=${course.playlistUrl.split("list=")[1]}`}
-//                                 title="YouTube Playlist"
-//                                 frameBorder="0"
-//                                 allowFullScreen
-//                             ></iframe>
-//                         ) : (
-//                             // Otherwise, display individual videos
-//                             course.videos.map((video, index) => {
-//                                 let videoId = "";
-
-//                                 // Extract YouTube Video ID from different URL formats
-//                                 if (video.includes("youtube.com/watch?v=")) {
-//                                     videoId = video.split("v=")[1]?.split("&")[0];
-//                                 } else if (video.includes("youtu.be/")) {
-//                                     videoId = video.split("youtu.be/")[1]?.split("?")[0];
-//                                 }
-
-//                                 return videoId ? (
-//                                     <iframe
-//                                         key={index}
-//                                         width="300"
-//                                         height="200"
-//                                         src={`https://www.youtube.com/embed/${videoId}`}
-//                                         title={`YouTube Video ${index + 1}`}
-//                                         frameBorder="0"
-//                                         allowFullScreen
-//                                     ></iframe>
-//                                 ) : (
-//                                     <p key={index} style={{ color: "red" }}>
-//                                         Invalid YouTube URL
-//                                     </p>
-//                                 );
-//                             })
-//                         )}
-//                     </div>
-//                 ))
-//             )}
-//         </div>
-//     );
-// };
-
-// export default CourseList;
-
 import { useState, useEffect } from "react";
-import axios from "axios";
-import "../css/CourseList.css"; // Import CSS for styling
+import { getCourse } from "./api";
 
-const CourseList = () => {
+
+
+export default function CourseList(){
     const [courses, setCourses] = useState([]);
+    const [selectedCourse, setSelectedCourse] = useState(null);
 
     useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const response = await axios.get("http://localhost:5001/api/courses/all");
-                setCourses(response.data);
-            } catch (error) {
-                console.error("Error fetching courses", error);
-            }
-        };
         fetchCourses();
     }, []);
 
-    return (
-        <div className="course-container">
-            <h2 className="heading">📚 Available Courses</h2>
-            {courses.length === 0 ? (
-                <p className="no-courses">No courses available</p>
-            ) : (
-                courses.map((course) => (
-                    <div key={course._id} className="course-card">
-                        <h3 className="course-title">{course.name}</h3>
+    const fetchCourses = async () => {
+        try{
+            const data = await getCourse();
+            setCourses(data)
+            console.log("📥 Courses received in frontend:", data);
+            
 
-                        {/* Display YouTube Playlist if available */}
-                        {course.playlistUrl ? (
-                            <iframe
-                                width="100%"
-                                height="315"
-                                src={`https://www.youtube.com/embed/videoseries?list=${course.playlistUrl.split("list=")[1]}`}
-                                title="YouTube Playlist"
-                                frameBorder="0"
-                                allowFullScreen
-                            ></iframe>
-                        ) : (
-                            <div className="video-container">
-                                {course.videos.map((video, index) => {
-                                    let videoId = "";
+        }catch(error){
+            console.log("error", error)
+        }
+    }
 
-                                    // Extract YouTube Video ID from different URL formats
-                                    if (video.includes("youtube.com/watch?v=")) {
-                                        videoId = video.split("v=")[1]?.split("&")[0];
-                                    } else if (video.includes("youtu.be/")) {
-                                        videoId = video.split("youtu.be/")[1]?.split("?")[0];
-                                    }
 
-                                    return videoId ? (
-                                        <iframe
-                                            key={index}
-                                            width="300"
-                                            height="200"
-                                            src={`https://www.youtube.com/embed/${videoId}`}
-                                            title={`YouTube Video ${index + 1}`}
-                                            frameBorder="0"
-                                            allowFullScreen
-                                            className="video-frame"
-                                        ></iframe>
-                                    ) : (
-                                        <p key={index} className="invalid-url">
-                                            ❌ Invalid YouTube URL
-                                        </p>
-                                    );
-                                })}
-                            </div>
-                        )}
+    return(
+<div>
+    <h2>Available Courses</h2>
+    {courses.length === 0 ? <p>No courses Available</p> : null}
+
+    {courses.map((course, index) => (
+        <div key = {index}>
+            <h3 onClick={()=> setSelectedCourse(selectedCourse === index ? null : index)}>
+                {course.title}
+                {selectedCourse === index ? "🔼" : "🔽"}
+            </h3>
+            {selectedCourse === index && (
+                <div>
+
+                {course.lectures.map((lecture, i) => (
+                    <div key = {i}>
+                <h4>{lecture.title}</h4>
+                <iframe
+                    width="100"
+                    height="100"
+                    src={lecture.videoUrl}
+                    allowFullScreen
+                ></iframe>
                     </div>
-                ))
-            )}
-        </div>
+                ))}
+                </div>  
+            )} 
+            
+            </div>
+    ))}
+
+</div>
     );
-};
+}
 
-export default CourseList;
 
+// export default function CourseList() {
+//   const [courses, setCourses] = useState([]);
+//   const [selectedCourse, setSelectedCourse] = useState(null); // Track which course is expanded
+
+//   useEffect(() => {
+//     fetchCourses();
+//   }, []);
+
+//   const fetchCourses = async () => {
+//     try {
+//       const data = await getCourse();
+//       setCourses(data);
+//     } catch (error) {
+//       console.error("🚨 Error fetching courses:", error);
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <h2>Available Courses</h2>
+//       {courses.length === 0 ? <p>No courses found.</p> : null}
+
+//       {courses.map((course, index) => (
+//         <div key={index} style={styles.courseContainer}>
+//           {/* Course Title (Clickable) */}
+//           <h3
+//             onClick={() => setSelectedCourse(selectedCourse === index ? null : index)}
+//             style={styles.courseTitle}
+//           >
+//             {course.title} {selectedCourse === index ? "🔼" : "🔽"}
+//           </h3>
+
+//           {/* Expandable Lecture List */}
+//           {selectedCourse === index && (
+//             <div style={styles.lectureList}>
+//               {course.lectures.map((lecture, i) => (
+//                 <div key={i} style={styles.lectureItem}>
+//                   <h4>{lecture.title}</h4>
+//                   <iframe
+//                     width="560"
+//                     height="315"
+//                     src={lecture.videoUrl}
+//                     allowFullScreen
+//                   ></iframe>
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       ))}
+//     </div>
+//   );
+// }
+
+// // Basic styles for a cleaner look
+// const styles = {
+//   courseContainer: {
+//     border: "1px solid #ddd",
+//     padding: "10px",
+//     marginBottom: "10px",
+//     cursor: "pointer",
+//     backgroundColor: "#f9f9f9",
+//     borderRadius: "5px",
+//   },
+//   courseTitle: {
+//     margin: "0",
+//     padding: "10px",
+//     backgroundColor: "#ddd",
+//     cursor: "pointer",
+//     textAlign: "center",
+//     fontWeight: "bold",
+//   },
+//   lectureList: {
+//     padding: "10px",
+//     backgroundColor: "#fff",
+//   },
+//   lectureItem: {
+//     marginBottom: "10px",
+//     borderBottom: "1px solid #ddd",
+//     paddingBottom: "10px",
+//   },
+// };
