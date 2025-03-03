@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { createCourse } from "./api";
 
-
-export default function CourseGenerator({ onCourseCreated }){
+export default function CourseGenerator(){
 
     const [videoUrl, setVideoUrl] = useState("")
     const [message, setMessage] = useState("")
@@ -17,10 +16,6 @@ export default function CourseGenerator({ onCourseCreated }){
             await createCourse(videoUrl);
             setMessage("Course created successfully");
             setVideoUrl("")
-            onCourseCreated();
-            
-            
-
 
         }catch(error){
             setMessage("Error creating the course")
