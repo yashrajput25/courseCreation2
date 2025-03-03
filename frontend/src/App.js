@@ -1,23 +1,25 @@
 import { BrowserRouter as Router, Route, Routes, Link} from "react-router-dom";
-import CreateCourse from "./components/createCourse";
 import CourseList from "./components/courseList";
-import ProfessorDashboard from "./components/ProfessorDashboard"; // Import the dashboard
+import CourseGenerator from "./components/courseGenerator";
+
 
 function App(){
   return (
+    <div>
+    <h1>Course Splitter</h1>
     <Router>
       <nav>
-        <Link to="/">Home</Link> | <Link to ="/create">Create Course </Link> |  <Link to="/dashboard">Professor Dashboard</Link>
+        <li><Link to = "/">Create Course</Link></li>
+        <li><Link to = "/courses">View Courses</Link></li>
       </nav>
-      <Routes>
-      <Route path = "/" element = { <CourseList/>} />
-      <Route path = "/create" element = { <CreateCourse/>}/>
-      <Route path="/professor_dashboard.html" element={<ProfessorDashboard />} /> {/* Route for Dashboard */}
-      </Routes>
-      
-    </Router>
 
-  );
+<Routes>
+  <Route path ="/" element={<CourseGenerator/>}/>
+  <Route path ="/courses" element = {<CourseList/>}/>
+</Routes>
+</Router>
+    </div>)
 }
+
 
 export default App;
