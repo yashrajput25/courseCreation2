@@ -80,6 +80,7 @@ function extractTimestampsAndTitlesWithEndTimes(description) {
 
 // ✅ Fix: Ensure `title` is correctly assigned
 app.post('/timestamps', async (req, res) => {
+  console.log("Incoming request body:", req.body);
   const videoUrl = req.body.videoUrl;
   const videoId = extractVideoId(videoUrl);
 
