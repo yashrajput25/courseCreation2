@@ -1,6 +1,6 @@
 const Course = require("../models/Course");
 
-
+// ##################################### COURSE CREATION CONTROLLER##############
 const createCourse = async(req,res) => {
 
     try{
